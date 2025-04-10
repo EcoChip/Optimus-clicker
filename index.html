@@ -1,203 +1,316 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Click Jump Simulator</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cookie Clicker PRO</title>
   <style>
     body {
       font-family: Arial, sans-serif;
+      background-color: #1e1e1e;
+      color: white;
       text-align: center;
-      background-color: #f4f4f4;
+      padding: 20px;
     }
+
     .container {
-      margin-top: 50px;
+      max-width: 500px;
+      margin: auto;
     }
-    button {
-      padding: 10px 20px;
-      font-size: 16px;
-      margin: 5px;
-      border-radius: 8px;
+
+    #cookie {
+      font-size: 100px;
       cursor: pointer;
+      transition: transform 0.1s;
     }
-    .bonus {
-      position: fixed;
-      top: 20px;
-      right: 20px;
+
+    #cookie:active {
+      transform: scale(0.95);
+    }
+
+    .upgrades button {
+      margin: 10px 0;
       padding: 10px;
-      background: yellow;
-      border: 2px solid #000;
+      width: 100%;
+      font-size: 16px;
+      background-color: #333;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: background-color 0.2s;
+    }
+
+    .upgrades button:hover {
+      background-color: #555;
+    }
+
+    .info, .bonus-active, .prestige {
+      margin-top: 10px;
+    }
+
+    .bonus-button {
+      background-color: gold;
+      color: black;
       font-weight: bold;
     }
-    .skin {
-      width: 100px;
-      height: 100px;
-      margin: auto;
-      background-size: cover;
+
+    .bonus-active {
+      margin-top: 10px;
+      font-size: 18px;
+      color: #0f0;
     }
-    .floating-text {
-      position: absolute;
-      font-size: 20px;
-      color: red;
-      pointer-events: none;
-      animation: floatUp 1s ease-out forwards;
+
+    .skin-selector {
+      margin-top: 20px;
     }
-    @keyframes floatUp {
-      to {
-        transform: translateY(-50px);
-        opacity: 0;
-      }
+
+    .skin-selector button {
+      margin: 5px;
+      padding: 5px 10px;
+    }
+
+    .logros {
+      margin-top: 20px;
+      background: #222;
+      border-radius: 10px;
+      padding: 10px;
+    }
+
+    .prestige-required {
+      margin-top: 20px;
+      color: #ff9;
+      font-weight: bold;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Click Jump Simulator</h1>
-    <div class="skin" id="skin"></div>
-    <h2>Clicks: <span id="clicks">0</span></h2>
-    <button onclick="clickJump()">Click!</button>
-    <div>
-      <button onclick="buyUpgrade('autoclicker')">AutoClicker (<span id="autoclickerCost">50</span>)</button>
-      <button onclick="buyUpgrade('betterClick')">Better Click (<span id="betterClickCost">100</span>)</button>
-      <button onclick="buyUpgrade('superClick')">Super Click (<span id="superClickCost">500</span>)</button>
+    <h1>🍪 Cookie Clicker PRO 🍪</h1>
+    <div id="cookie" onclick="clickCookie()">🍪</div>
+    <p>Galletas: <span id="cookieCount">0</span></p>
+
+    <div class="upgrades">
+      <button onclick="buyUpgrade('click', 1)">Mejorar Clic (+1) - <span id="clickCost">10</span></button>
+      <button onclick="buyUpgrade('auto', 1)">Auto Clicker (+1/s) - <span id="autoCost">25</span></button>
+      <button onclick="buyUpgrade('click', 5)">Súper Clicker (+5) - <span id="superClickCost">50</span></button>
+      <button onclick="buyUpgrade('click', 10)">Click Fuego (+10) - <span id="fireClickCost">100</span></button>
+      <button onclick="buyUpgrade('auto', 5)">Auto Clicker Turbo (+5/s) - <span id="turboCost">200</span></button>
+      <button onclick="buyDouble()">💎 Doble Recompensa 💎 - <span id="doubleCost">500</span></button>
     </div>
-    <div>
-      <button onclick="changeSkin()">Change Skin</button>
+
+    <button class="bonus-button" id="bonusBtn" style="display:none;" onclick="activateBonus()">¡BONUS!</button>
+    <p class="bonus-active" id="bonusActive"></p>
+
+    <div class="info">
+      Por clic: <span id="perClick">1</span> |
+      Auto/s: <span id="autoClickers">0</span> |
+      Multiplicador: <span id="multiplier">1x</span>
     </div>
-    <div>
-      <button onclick="prestige()">Prestige (x10 upgrades)</button>
+
+    <div class="prestige">
+      <h3>Prestigio</h3>
+      <button onclick="doPrestige()">Reiniciar y obtener x10 poder</button>
+      <p class="prestige-required" id="prestigeRequired">Prestigio disponible a partir de: 1.000.000 galletas</p>
+    </div>
+
+    <div class="logros" id="logrosDiv">
+      <h3>Logros</h3>
+      <ul id="logrosList"></ul>
     </div>
   </div>
 
-  <div id="bonus" class="bonus" style="display: none;"></div>
-
   <script>
-    let clicks = 0;
-    let clickPower = 1;
-    let upgrades = {
-      autoclicker: { level: 0, cost: 50, power: 1 },
-      betterClick: { level: 0, cost: 100, power: 2 },
-      superClick: { level: 0, cost: 500, power: 5 },
-    };
-    let prestigeLevel = 0;
-    let bonusActive = false;
-    let bonusMultiplier = 1;
-    let bonusTimeout;
-    let bonusInterval;
-    let skinIndex = 0;
-    const skins = [
-      'https://via.placeholder.com/100/FF0000',
-      'https://via.placeholder.com/100/00FF00',
-      'https://via.placeholder.com/100/0000FF'
-    ];
+    let cookieCount = 0;
+    let baseClick = 1;
+    let baseAuto = 0;
+    let multiplier = 1;
+    let prestigeLevel = 1;
+    let prestigeRequirement = 1000000;  // Requiere 1 millón para prestigiar
+    let prestigeMultiplier = 10;
 
-    function updateUI() {
-      document.getElementById("clicks").textContent = Math.floor(clicks);
-      document.getElementById("autoclickerCost").textContent = upgrades.autoclicker.cost;
-      document.getElementById("betterClickCost").textContent = upgrades.betterClick.cost;
-      document.getElementById("superClickCost").textContent = upgrades.superClick.cost;
+    const upgrades = {
+      click: { cost: 10, power: 1 },
+      auto: { cost: 25, power: 0 },
+      superClick: { cost: 50, power: 5 },
+      fireClick: { cost: 100, power: 10 },
+      turbo: { cost: 200, power: 0 },
+      double: { cost: 500 }
+    };
+
+    let bonusActive = false;
+    let bonusTimeout = null;
+    let bonusMultiplier = 1;
+    let skin = '🍪';
+    const logros = [];
+
+    function clickCookie() {
+      cookieCount += baseClick * multiplier * bonusMultiplier;
+      update();
+      saveGame();
+      checkLogros();
     }
 
-    function clickJump() {
-      clicks += clickPower * bonusMultiplier;
-      updateUI();
+    function buyUpgrade(type, power) {
+      let costId = "";
+      let cost = 0;
+
+      if (type === 'click') {
+        cost = upgrades.click.cost;
+        if (cookieCount >= cost) {
+          cookieCount -= cost;
+          baseClick += power * prestigeLevel;
+          upgrades.click.cost = Math.floor(upgrades.click.cost * 1.4);
+        }
+        costId = "clickCost";
+      } else if (type === 'auto') {
+        cost = upgrades.auto.cost;
+        if (cookieCount >= cost) {
+          cookieCount -= cost;
+          baseAuto += power * prestigeLevel;
+          upgrades.auto.cost = Math.floor(upgrades.auto.cost * 1.4);
+        }
+        costId = "autoCost";
+      }
+      update();
       saveGame();
     }
 
-    function buyUpgrade(name) {
-      let up = upgrades[name];
-      if (clicks >= up.cost) {
-        clicks -= up.cost;
-        up.level++;
-        clickPower += up.power * (prestigeLevel + 1);
-        up.cost = Math.floor(up.cost * 1.5);
-        up.power = Math.floor(up.power * 1.2);
-        updateUI();
+    function buyDouble() {
+      if (cookieCount >= upgrades.double.cost) {
+        cookieCount -= upgrades.double.cost;
+        baseClick *= 2;
+        baseAuto *= 2;
+        upgrades.double.cost = Math.floor(upgrades.double.cost * 3);
+        update();
         saveGame();
       }
     }
 
-    function prestige() {
-      prestigeLevel++;
-      clickPower = 1;
-      for (let key in upgrades) {
-        upgrades[key].level = 0;
-        upgrades[key].cost = Math.floor(upgrades[key].cost / 2);
-        upgrades[key].power *= 10;
-      }
-      clicks = 0;
-      updateUI();
-      saveGame();
-    }
-
-    function randomBonus() {
-      const multipliers = [2, 4, 10, 1000];
-      const chances = [0.5, 0.3, 0.15, 0.05];
-      if (bonusActive) return;
-      let rand = Math.random();
-      let index = 0;
-      while (rand > chances[index]) {
-        rand -= chances[index];
-        index++;
-      }
-      bonusMultiplier = multipliers[index];
-      bonusActive = true;
-      let duration = index < 2 ? (index === 0 ? 60000 : 30000) : (index === 2 ? 15000 : 5000);
-      let bonusText = `BONUS x${bonusMultiplier} - ${duration / 1000}s`;
-      document.getElementById("bonus").style.display = "block";
-      document.getElementById("bonus").textContent = bonusText;
-      bonusTimeout = setTimeout(() => {
-        bonusActive = false;
-        bonusMultiplier = 1;
-        document.getElementById("bonus").style.display = "none";
-      }, duration);
-    }
-
-    function changeSkin() {
-      skinIndex = (skinIndex + 1) % skins.length;
-      document.getElementById("skin").style.backgroundImage = `url('${skins[skinIndex]}')`;
+    function update() {
+      document.getElementById("cookieCount").textContent = Math.floor(cookieCount);
+      document.getElementById("perClick").textContent = baseClick * multiplier * bonusMultiplier;
+      document.getElementById("autoClickers").textContent = baseAuto;
+      document.getElementById("multiplier").textContent = multiplier + "x";
+      document.getElementById("clickCost").textContent = upgrades.click.cost;
+      document.getElementById("autoCost").textContent = upgrades.auto.cost;
+      document.getElementById("superClickCost").textContent = upgrades.superClick.cost;
+      document.getElementById("fireClickCost").textContent = upgrades.fireClick.cost;
+      document.getElementById("turboCost").textContent = upgrades.turbo.cost;
+      document.getElementById("doubleCost").textContent = upgrades.double.cost;
+      document.getElementById("cookie").textContent = skin;
+      document.getElementById("prestigeRequired").textContent = `Prestigio disponible a partir de: ${prestigeRequirement} galletas`;
     }
 
     function saveGame() {
-      const saveData = {
-        clicks,
-        clickPower,
-        upgrades,
-        prestigeLevel,
-        skinIndex,
-      };
-      localStorage.setItem("clickGameSave", JSON.stringify(saveData));
+      localStorage.setItem("cookieGame", JSON.stringify({
+        cookieCount, baseClick, baseAuto, multiplier, prestigeLevel, upgrades, skin, logros, prestigeRequirement
+      }));
     }
 
     function loadGame() {
-      const saveData = JSON.parse(localStorage.getItem("clickGameSave"));
-      if (saveData) {
-        clicks = saveData.clicks;
-        clickPower = saveData.clickPower;
-        upgrades = saveData.upgrades;
-        prestigeLevel = saveData.prestigeLevel;
-        skinIndex = saveData.skinIndex;
-        changeSkin();
+      const saved = localStorage.getItem("cookieGame");
+      if (saved) {
+        const game = JSON.parse(saved);
+        cookieCount = game.cookieCount || 0;
+        baseClick = game.baseClick || 1;
+        baseAuto = game.baseAuto || 0;
+        multiplier = game.multiplier || 1;
+        prestigeLevel = game.prestigeLevel || 1;
+        prestigeRequirement = game.prestigeRequirement || 1000000;
+        Object.assign(upgrades, game.upgrades || {});
+        skin = game.skin || '🍪';
+        logros.length = 0;
+        logros.push(...(game.logros || []));
+        renderLogros();
       }
-      updateUI();
     }
 
-    setInterval(() => {
-      if (upgrades.autoclicker.level > 0) {
-        clicks += upgrades.autoclicker.level * upgrades.autoclicker.power * (prestigeLevel + 1) * bonusMultiplier;
-        updateUI();
-      }
-    }, 1000);
+    function autoClick() {
+      cookieCount += baseAuto * multiplier * bonusMultiplier;
+      update();
+      saveGame();
+    }
 
-    function startBonusSpawner() {
-      bonusInterval = setInterval(() => {
-        let delay = Math.random() * 600000 + 60000; // entre 1 y 10 minutos
-        setTimeout(randomBonus, delay);
-      }, 10000);
+    setInterval(autoClick, 1000);
+
+    function randomBonus() {
+      const delay = Math.floor(Math.random() * (600000 - 60000) + 60000);
+      setTimeout(() => {
+        document.getElementById("bonusBtn").style.display = 'inline-block';
+        randomBonus();
+      }, delay);
+    }
+
+    function activateBonus() {
+      const bonusTypes = [2, 4, 10, 1000];
+      const rand = Math.random();
+      let mult = 2;
+      if (rand < 0.6) mult = 2;
+      else if (rand < 0.9) mult = 4;
+      else if (rand < 0.99) mult = 10;
+      else mult = 1000;
+
+      bonusMultiplier = mult;
+      let duration = mult === 2 ? 60000 : mult === 4 ? 30000 : 10000;
+
+      document.getElementById("bonusActive").textContent = `Bonus x${mult} activo por ${duration / 1000} segundos`;
+
+      setTimeout(() => {
+        bonusMultiplier = 1;
+        document.getElementById("bonusActive").textContent = "";
+      }, duration);
+      
+      document.getElementById("bonusBtn").style.display = 'none';
+    }
+
+    function doPrestige() {
+      if (cookieCount >= prestigeRequirement) {
+        cookieCount = 0;
+        prestigeLevel++;
+        baseClick = 1;
+        baseAuto = 0;
+        prestigeRequirement = Math.floor(prestigeRequirement * 1.5);
+        multiplier = 1;
+        upgrades.click.cost = 10;
+        upgrades.auto.cost = 25;
+        upgrades.double.cost = 500;
+        upgrades.superClick.cost = 50;
+        upgrades.fireClick.cost = 100;
+        upgrades.turbo.cost = 200;
+        update();
+        saveGame();
+      }
+    }
+
+    function checkLogros() {
+      if (cookieCount >= 1000 && !logros.includes("1k galletas")) {
+        logros.push("1k galletas");
+        renderLogros();
+      }
+      if (cookieCount >= 100000 && !logros.includes("100k galletas")) {
+        logros.push("100k galletas");
+        renderLogros();
+      }
+      if (cookieCount >= 1000000 && !logros.includes("1M galletas")) {
+        logros.push("1M galletas");
+        renderLogros();
+      }
+    }
+
+    function renderLogros() {
+      const logrosList = document.getElementById("logrosList");
+      logrosList.innerHTML = "";
+      logros.forEach(l => {
+        const li = document.createElement("li");
+        li.textContent = l;
+        logrosList.appendChild(li);
+      });
     }
 
     loadGame();
-    startBonusSpawner();
+    randomBonus();
+
   </script>
 </body>
 </html>
