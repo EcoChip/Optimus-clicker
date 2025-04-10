@@ -96,6 +96,10 @@
       <button onclick="buyUpgrade('click', 5)">Súper Clicker (+5) - <span id="superClickCost">50</span></button>
       <button onclick="buyUpgrade('click', 10)">Click Fuego (+10) - <span id="fireClickCost">100</span></button>
       <button onclick="buyUpgrade('auto', 5)">Auto Clicker Turbo (+5/s) - <span id="turboCost">200</span></button>
+      <button onclick="buyUpgrade('click', 50)">Mega Click (+50) - <span id="megaClickCost">500</span></button>
+      <button onclick="buyUpgrade('click', 100)">Omega Click (+100) - <span id="omegaClickCost">1000</span></button>
+      <button onclick="buyUpgrade('auto', 1000)">clicks de babara (+1000/s) - <span id="babaraCost">25000</span></button>
+      <button onclick="buyUpgrade('auto', 1)">clicks de la engel (+?/s) - <span id="engelCost">2500000</span></button>
       <button onclick="buyDouble()">💎 Doble Recompensa 💎 - <span id="doubleCost">500</span></button>
     </div>
 
@@ -126,7 +130,7 @@
     let baseAuto = 0;
     let multiplier = 1;
     let prestigeLevel = 1;
-    let prestigeRequirement = 1000000;  // Requiere 1 millón para prestigiar
+    let prestigeRequirement = 1000000;
     let prestigeMultiplier = 10;
 
     const upgrades = {
@@ -135,6 +139,9 @@
       superClick: { cost: 50, power: 5 },
       fireClick: { cost: 100, power: 10 },
       turbo: { cost: 200, power: 0 },
+      megaClick: { cost: 500, power: 50 },
+      omegaClick: { cost: 1000, power: 100 },
+      babaraClick: { cost: 5000, power: 1000 },
       double: { cost: 500 }
     };
 
@@ -171,7 +178,32 @@
           upgrades.auto.cost = Math.floor(upgrades.auto.cost * 1.4);
         }
         costId = "autoCost";
+      } else if (type === 'megaClick') {
+        cost = upgrades.megaClick.cost;
+        if (cookieCount >= cost) {
+          cookieCount -= cost;
+          baseClick += power * prestigeLevel;
+          upgrades.megaClick.cost = Math.floor(upgrades.megaClick.cost * 1.4);
+        }
+        costId = "megaClickCost";
+      } else if (type === 'omegaClick') {
+        cost = upgrades.omegaClick.cost;
+        if (cookieCount >= cost) {
+          cookieCount -= cost;
+          baseClick += power * prestigeLevel;
+          upgrades.omegaClick.cost = Math.floor(upgrades.omegaClick.cost * 1.4);
+        }
+        costId = "omegaClickCost";
+      } else if (type === 'babaraClick') {
+        cost = upgrades.babaraClick.cost;
+        if (cookieCount >= cost) {
+          cookieCount -= cost;
+          baseClick += power * prestigeLevel;
+          upgrades.babaraClick.cost = Math.floor(upgrades.babaraClick.cost * 1.4);
+        }
+        costId = "babaraClickCost";
       }
+
       update();
       saveGame();
     }
@@ -196,72 +228,35 @@
       document.getElementById("autoCost").textContent = upgrades.auto.cost;
       document.getElementById("superClickCost").textContent = upgrades.superClick.cost;
       document.getElementById("fireClickCost").textContent = upgrades.fireClick.cost;
-      document.getElementById("turboCost").textContent = upgrades.turbo.cost;
+      document.getElementById("megaClickCost").textContent = upgrades.megaClick.cost;
+      document.getElementById("omegaClickCost").textContent = upgrades.omegaClick.cost;
+      document.getElementById("babaraClickCost").textContent = upgrades.babaraClick.cost;
       document.getElementById("doubleCost").textContent = upgrades.double.cost;
-      document.getElementById("cookie").textContent = skin;
-      document.getElementById("prestigeRequired").textContent = `Prestigio disponible a partir de: ${prestigeRequirement} galletas`;
     }
 
     function saveGame() {
-      localStorage.setItem("cookieGame", JSON.stringify({
-        cookieCount, baseClick, baseAuto, multiplier, prestigeLevel, upgrades, skin, logros, prestigeRequirement
-      }));
+      localStorage.setItem("cookieCount", cookieCount);
+      localStorage.setItem("baseClick", baseClick);
+      localStorage.setItem("baseAuto", baseAuto);
+      localStorage.setItem("multiplier", multiplier);
+      localStorage.setItem("prestigeLevel", prestigeLevel);
+      localStorage.setItem("prestigeRequirement", prestigeRequirement);
+      localStorage.setItem("prestigeMultiplier", prestigeMultiplier);
+      localStorage.setItem("upgrades", JSON.stringify(upgrades));
+      localStorage.setItem("logros", JSON.stringify(logros));
     }
 
     function loadGame() {
-      const saved = localStorage.getItem("cookieGame");
-      if (saved) {
-        const game = JSON.parse(saved);
-        cookieCount = game.cookieCount || 0;
-        baseClick = game.baseClick || 1;
-        baseAuto = game.baseAuto || 0;
-        multiplier = game.multiplier || 1;
-        prestigeLevel = game.prestigeLevel || 1;
-        prestigeRequirement = game.prestigeRequirement || 1000000;
-        Object.assign(upgrades, game.upgrades || {});
-        skin = game.skin || '🍪';
-        logros.length = 0;
-        logros.push(...(game.logros || []));
-        renderLogros();
-      }
-    }
-
-    function autoClick() {
-      cookieCount += baseAuto * multiplier * bonusMultiplier;
+      cookieCount = parseFloat(localStorage.getItem("cookieCount")) || 0;
+      baseClick = parseFloat(localStorage.getItem("baseClick")) || 1;
+      baseAuto = parseFloat(localStorage.getItem("baseAuto")) || 0;
+      multiplier = parseFloat(localStorage.getItem("multiplier")) || 1;
+      prestigeLevel = parseFloat(localStorage.getItem("prestigeLevel")) || 1;
+      prestigeRequirement = parseFloat(localStorage.getItem("prestigeRequirement")) || 1000000;
+      prestigeMultiplier = parseFloat(localStorage.getItem("prestigeMultiplier")) || 10;
+      upgrades = JSON.parse(localStorage.getItem("upgrades")) || upgrades;
+      logros = JSON.parse(localStorage.getItem("logros")) || [];
       update();
-      saveGame();
-    }
-
-    setInterval(autoClick, 1000);
-
-    function randomBonus() {
-      const delay = Math.floor(Math.random() * (600000 - 60000) + 60000);
-      setTimeout(() => {
-        document.getElementById("bonusBtn").style.display = 'inline-block';
-        randomBonus();
-      }, delay);
-    }
-
-    function activateBonus() {
-      const bonusTypes = [2, 4, 10, 1000];
-      const rand = Math.random();
-      let mult = 2;
-      if (rand < 0.6) mult = 2;
-      else if (rand < 0.9) mult = 4;
-      else if (rand < 0.99) mult = 10;
-      else mult = 1000;
-
-      bonusMultiplier = mult;
-      let duration = mult === 2 ? 60000 : mult === 4 ? 30000 : 10000;
-
-      document.getElementById("bonusActive").textContent = `Bonus x${mult} activo por ${duration / 1000} segundos`;
-
-      setTimeout(() => {
-        bonusMultiplier = 1;
-        document.getElementById("bonusActive").textContent = "";
-      }, duration);
-      
-      document.getElementById("bonusBtn").style.display = 'none';
     }
 
     function doPrestige() {
@@ -278,6 +273,9 @@
         upgrades.superClick.cost = 50;
         upgrades.fireClick.cost = 100;
         upgrades.turbo.cost = 200;
+        upgrades.megaClick.cost = 500;
+        upgrades.omegaClick.cost = 1000;
+        upgrades.babaraClick.cost = 5000;
         update();
         saveGame();
       }
@@ -301,16 +299,14 @@
     function renderLogros() {
       const logrosList = document.getElementById("logrosList");
       logrosList.innerHTML = "";
-      logros.forEach(l => {
+      logros.forEach((logro) => {
         const li = document.createElement("li");
-        li.textContent = l;
+        li.textContent = logro;
         logrosList.appendChild(li);
       });
     }
 
     loadGame();
-    randomBonus();
-
   </script>
 </body>
 </html>
