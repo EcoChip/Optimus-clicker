@@ -1,51 +1,58 @@
-body {
-    font-family: Arial, sans-serif;
-    background-color: #fdf6ec;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    margin: 0;
+let cookieCount = 0;
+let cookiesPerClick = 1;
+let autoClickers = 0;
+
+// Mejora de clic
+let clickUpgradeCost = 10;
+let superClickerCost = 50;
+let autoClickerCost = 25;
+
+function updateDisplay() {
+    document.getElementById('cookieCount').textContent = cookieCount;
+    document.getElementById('cookiesPerClick').textContent = cookiesPerClick;
+    document.getElementById('autoClickers').textContent = autoClickers;
+    document.getElementById('clickUpgradeCost').textContent = clickUpgradeCost;
+    document.getElementById('superClickerCost').textContent = superClickerCost;
+    document.getElementById('autoClickerCost').textContent = autoClickerCost;
 }
 
-.container {
-    text-align: center;
-    background-color: #fff3d1;
-    padding: 30px;
-    border-radius: 20px;
-    box-shadow: 0 0 15px rgba(0,0,0,0.2);
+function clickCookie() {
+    cookieCount += cookiesPerClick;
+    updateDisplay();
 }
 
-#cookie {
-    font-size: 120px;
-    cursor: pointer;
-    transition: transform 0.1s;
+function buyClickUpgrade() {
+    if (cookieCount >= clickUpgradeCost) {
+        cookieCount -= clickUpgradeCost;
+        cookiesPerClick += 1;
+        clickUpgradeCost = Math.floor(clickUpgradeCost * 1.5);
+        updateDisplay();
+    }
 }
 
-#cookie:active {
-    transform: scale(0.95);
+function buySuperClicker() {
+    if (cookieCount >= superClickerCost) {
+        cookieCount -= superClickerCost;
+        cookiesPerClick += 5;
+        superClickerCost = Math.floor(superClickerCost * 1.7);
+        updateDisplay();
+    }
 }
 
-button {
-    margin: 10px;
-    padding: 12px 20px;
-    font-size: 16px;
-    cursor: pointer;
-    background-color: #ffd966;
-    border: none;
-    border-radius: 10px;
-    box-shadow: 2px 2px 5px #c6a700;
+function buyAutoClicker() {
+    if (cookieCount >= autoClickerCost) {
+        cookieCount -= autoClickerCost;
+        autoClickers += 1;
+        autoClickerCost = Math.floor(autoClickerCost * 1.6);
+        updateDisplay();
+    }
 }
 
-button:hover {
-    background-color: #ffeb99;
-}
+// Auto clicker: cada segundo suma galletas
+setInterval(() => {
+    cookieCount += autoClickers;
+    updateDisplay();
+}, 1000);
 
-.upgrades {
-    margin-top: 20px;
-}
-
-.info {
-    margin-top: 20px;
-    font-weight: bold;
-}
+// Inicializar
+updateDisplay();
