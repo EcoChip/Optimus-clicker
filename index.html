@@ -1,26 +1,215 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cookie Clicker Mejorado</title>
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cookie Clicker Pro</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background: #f8e8d6;
+      text-align: center;
+      padding: 20px;
+    }
+    .container {
+      max-width: 600px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 20px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.2);
+    }
+    #cookie {
+      font-size: 80px;
+      cursor: pointer;
+      transition: transform 0.1s ease;
+    }
+    #cookie:active {
+      transform: scale(1.1);
+    }
+    .upgrades button {
+      display: block;
+      width: 100%;
+      margin: 10px 0;
+      padding: 10px;
+      border: none;
+      background-color: #ffa500;
+      color: white;
+      font-size: 16px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    .upgrades button:hover {
+      background-color: #ff8000;
+    }
+    .info {
+      margin-top: 15px;
+      font-weight: bold;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>🍪 Cookie Clicker Mejorado 🍪</h1>
-        <div id="cookie" onclick="clickCookie()">🍪</div>
-        <p>Galletas: <span id="cookieCount">0</span></p>
+  <div class="container">
+    <h1>🍪 Cookie Clicker PRO 🍪</h1>
+    <div id="cookie" onclick="clickCookie()">🍪</div>
+    <p>Galletas: <span id="cookieCount">0</span></p>
 
-        <div class="upgrades">
-            <button onclick="buyClickUpgrade()">Mejorar Clic (+1) - Costo: <span id="clickUpgradeCost">10</span></button>
-            <button onclick="buyAutoClicker()">Auto Clicker - Costo: <span id="autoClickerCost">25</span></button>
-            <button onclick="buySuperClicker()">Súper Clicker (+5) - Costo: <span id="superClickerCost">50</span></button>
-        </div>
-
-        <p class="info">Click normal: <span id="cookiesPerClick">1</span> | Auto clics/seg: <span id="autoClickers">0</span></p>
+    <div class="upgrades">
+      <button onclick="buyClickUpgrade()">Mejorar Clic (+1) - <span id="clickUpgradeCost">10</span></button>
+      <button onclick="buyAutoClicker()">Auto Clicker (+1/s) - <span id="autoClickerCost">25</span></button>
+      <button onclick="buySuperClicker()">Súper Clicker (+5) - <span id="superClickerCost">50</span></button>
+      <button onclick="buyFireClick()">Click Fuego (+10) - <span id="fireClickCost">100</span></button>
+      <button onclick="buyTurboAutoClicker()">Auto Clicker Turbo (+5/s) - <span id="turboAutoClickerCost">200</span></button>
+      <button onclick="buyDoubleReward()">💎 Doble Recompensa 💎 - <span id="doubleRewardCost">500</span></button>
+      <button onclick="resetGame()">🔄 Reiniciar Partida</button>
     </div>
 
-    <script src="script.js"></script>
+    <p class="info">
+      Por clic: <span id="cookiesPerClick">1</span> |
+      Auto/s: <span id="autoClickers">0</span>
+    </p>
+  </div>
+
+  <script>
+    let cookieCount = 0;
+    let cookiesPerClick = 1;
+    let autoClickers = 0;
+
+    let clickUpgradeCost = 10;
+    let superClickerCost = 50;
+    let autoClickerCost = 25;
+    let fireClickCost = 100;
+    let turboAutoClickerCost = 200;
+    let doubleRewardCost = 500;
+
+    function saveGame() {
+      const gameState = {
+        cookieCount,
+        cookiesPerClick,
+        autoClickers,
+        clickUpgradeCost,
+        superClickerCost,
+        autoClickerCost,
+        fireClickCost,
+        turboAutoClickerCost,
+        doubleRewardCost
+      };
+      localStorage.setItem("cookieClickerSave", JSON.stringify(gameState));
+    }
+
+    function loadGame() {
+      const saved = localStorage.getItem("cookieClickerSave");
+      if (saved) {
+        const game = JSON.parse(saved);
+        cookieCount = game.cookieCount || 0;
+        cookiesPerClick = game.cookiesPerClick || 1;
+        autoClickers = game.autoClickers || 0;
+        clickUpgradeCost = game.clickUpgradeCost || 10;
+        superClickerCost = game.superClickerCost || 50;
+        autoClickerCost = game.autoClickerCost || 25;
+        fireClickCost = game.fireClickCost || 100;
+        turboAutoClickerCost = game.turboAutoClickerCost || 200;
+        doubleRewardCost = game.doubleRewardCost || 500;
+      }
+    }
+
+    function updateDisplay() {
+      document.getElementById("cookieCount").textContent = Math.floor(cookieCount);
+      document.getElementById("cookiesPerClick").textContent = cookiesPerClick;
+      document.getElementById("autoClickers").textContent = autoClickers;
+      document.getElementById("clickUpgradeCost").textContent = clickUpgradeCost;
+      document.getElementById("superClickerCost").textContent = superClickerCost;
+      document.getElementById("autoClickerCost").textContent = autoClickerCost;
+      document.getElementById("fireClickCost").textContent = fireClickCost;
+      document.getElementById("turboAutoClickerCost").textContent = turboAutoClickerCost;
+      document.getElementById("doubleRewardCost").textContent = doubleRewardCost;
+    }
+
+    function clickCookie() {
+      cookieCount += cookiesPerClick;
+      updateDisplay();
+      saveGame();
+    }
+
+    function buyClickUpgrade() {
+      if (cookieCount >= clickUpgradeCost) {
+        cookieCount -= clickUpgradeCost;
+        cookiesPerClick += 1;
+        clickUpgradeCost = Math.floor(clickUpgradeCost * 1.4);
+        updateDisplay();
+        saveGame();
+      }
+    }
+
+    function buySuperClicker() {
+      if (cookieCount >= superClickerCost) {
+        cookieCount -= superClickerCost;
+        cookiesPerClick += 5;
+        superClickerCost = Math.floor(superClickerCost * 1.5);
+        updateDisplay();
+        saveGame();
+      }
+    }
+
+    function buyAutoClicker() {
+      if (cookieCount >= autoClickerCost) {
+        cookieCount -= autoClickerCost;
+        autoClickers += 1;
+        autoClickerCost = Math.floor(autoClickerCost * 1.6);
+        updateDisplay();
+        saveGame();
+      }
+    }
+
+    function buyFireClick() {
+      if (cookieCount >= fireClickCost) {
+        cookieCount -= fireClickCost;
+        cookiesPerClick += 10;
+        fireClickCost = Math.floor(fireClickCost * 1.8);
+        updateDisplay();
+        saveGame();
+      }
+    }
+
+    function buyTurboAutoClicker() {
+      if (cookieCount >= turboAutoClickerCost) {
+        cookieCount -= turboAutoClickerCost;
+        autoClickers += 5;
+        turboAutoClickerCost = Math.floor(turboAutoClickerCost * 2);
+        updateDisplay();
+        saveGame();
+      }
+    }
+
+    function buyDoubleReward() {
+      if (cookieCount >= doubleRewardCost) {
+        cookieCount -= doubleRewardCost;
+        cookiesPerClick *= 2;
+        autoClickers *= 2;
+        doubleRewardCost = Math.floor(doubleRewardCost * 3);
+        updateDisplay();
+        saveGame();
+      }
+    }
+
+    function resetGame() {
+      if (confirm("¿Seguro que quieres reiniciar tu progreso?")) {
+        localStorage.removeItem("cookieClickerSave");
+        location.reload();
+      }
+    }
+
+    setInterval(() => {
+      cookieCount += autoClickers;
+      updateDisplay();
+      saveGame();
+    }, 1000);
+
+    window.onload = function () {
+      loadGame();
+      updateDisplay();
+    };
+  </script>
 </body>
 </html>
