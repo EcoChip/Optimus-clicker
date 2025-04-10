@@ -1,366 +1,203 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Cookie Clicker Pro</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Click Jump Simulator</title>
   <style>
     body {
-      font-family: 'Arial', sans-serif;
-      background: #f8e8d6;
+      font-family: Arial, sans-serif;
       text-align: center;
-      padding: 20px;
+      background-color: #f4f4f4;
     }
     .container {
-      max-width: 600px;
-      margin: auto;
-      background: white;
-      padding: 20px;
-      border-radius: 20px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.2);
+      margin-top: 50px;
     }
-    #cookie {
-      font-size: 80px;
-      cursor: pointer;
-      transition: transform 0.1s ease;
-    }
-    #cookie:active {
-      transform: scale(1.1);
-    }
-    .upgrades button, .prestige button {
-      display: block;
-      width: 100%;
-      margin: 10px 0;
-      padding: 10px;
-      border: none;
-      background-color: #ffa500;
-      color: white;
+    button {
+      padding: 10px 20px;
       font-size: 16px;
-      border-radius: 10px;
+      margin: 5px;
+      border-radius: 8px;
       cursor: pointer;
-      transition: background-color 0.3s;
     }
-    .upgrades button:hover, .prestige button:hover {
-      background-color: #ff8000;
-    }
-    .info {
-      margin-top: 15px;
+    .bonus {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 10px;
+      background: yellow;
+      border: 2px solid #000;
       font-weight: bold;
     }
-    .floating {
+    .skin {
+      width: 100px;
+      height: 100px;
+      margin: auto;
+      background-size: cover;
+    }
+    .floating-text {
       position: absolute;
+      font-size: 20px;
+      color: red;
+      pointer-events: none;
       animation: floatUp 1s ease-out forwards;
-      color: green;
-      font-weight: bold;
     }
     @keyframes floatUp {
-      0% { opacity: 1; transform: translateY(0); }
-      100% { opacity: 0; transform: translateY(-50px); }
-    }
-    #bonus {
-      position: fixed;
-      bottom: 50px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: gold;
-      padding: 10px;
-      border-radius: 10px;
-      cursor: pointer;
-      display: none;
-      z-index: 10;
-    }
-    #achievementsModal {
-      display: none;
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: white;
-      border: 2px solid #333;
-      padding: 20px;
-      border-radius: 10px;
-      z-index: 20;
-    }
-    #achievementsModal h2 {
-      margin-bottom: 10px;
-    }
-    #overlay {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.5);
-      z-index: 15;
+      to {
+        transform: translateY(-50px);
+        opacity: 0;
+      }
     }
   </style>
 </head>
 <body>
-  <div id="overlay" onclick="closeAchievements()"></div>
-  <div id="achievementsModal">
-    <h2>🏆 Logros</h2>
-    <ul id="achievementsList"></ul>
-    <button onclick="closeAchievements()">Cerrar</button>
-  </div>
   <div class="container">
-    <h1 id="title">🍪 Cookie Clicker PRO 🍪</h1>
-    <div id="cookie" onclick="clickCookie(event)">🍪</div>
-    <p>Galletas: <span id="cookieCount">0</span></p>
-
-    <div class="upgrades">
-      <button onclick="buyClickUpgrade()">Mejorar Clic (+1) - <span id="clickUpgradeCost">10</span></button>
-      <button onclick="buyAutoClicker()">Auto Clicker (+1/s) - <span id="autoClickerCost">25</span></button>
-      <button onclick="buySuperClicker()">Súper Clicker (+5) - <span id="superClickerCost">50</span></button>
-      <button onclick="buyFireClick()">Click Fuego (+10) - <span id="fireClickCost">100</span></button>
-      <button onclick="buyTurboAutoClicker()">Auto Clicker Turbo (+5/s) - <span id="turboAutoClickerCost">200</span></button>
-      <button onclick="buyMegaClick()">Mega Clicker (+50) - <span id="megaClickerCost">500</span></button>
-      <button onclick="buyDoubleReward()">💎 Doble Recompensa 💎 - <span id="doubleRewardCost">500</span></button>
-      <button onclick="openAchievements()">🏆 Ver Logros</button>
-      <button onclick="resetGame()">🔄 Reiniciar Partida</button>
+    <h1>Click Jump Simulator</h1>
+    <div class="skin" id="skin"></div>
+    <h2>Clicks: <span id="clicks">0</span></h2>
+    <button onclick="clickJump()">Click!</button>
+    <div>
+      <button onclick="buyUpgrade('autoclicker')">AutoClicker (<span id="autoclickerCost">50</span>)</button>
+      <button onclick="buyUpgrade('betterClick')">Better Click (<span id="betterClickCost">100</span>)</button>
+      <button onclick="buyUpgrade('superClick')">Super Click (<span id="superClickCost">500</span>)</button>
     </div>
-
-    <div class="prestige">
-      <button onclick="prestige()">🌟 Hacer Prestigio (x2 Clics) 🌟</button>
+    <div>
+      <button onclick="changeSkin()">Change Skin</button>
     </div>
-
-    <p class="info">
-      Por clic: <span id="cookiesPerClick">1</span> |
-      Auto/s: <span id="autoClickers">0</span>
-    </p>
-
-    <div id="bonus" onclick="activateBonus()">🎁 BONUS APARECIDO 🎁</div>
+    <div>
+      <button onclick="prestige()">Prestige (x10 upgrades)</button>
+    </div>
   </div>
+
+  <div id="bonus" class="bonus" style="display: none;"></div>
 
   <script>
-    let cookieCount = 0;
-    let cookiesPerClick = 1;
-    let autoClickers = 0;
+    let clicks = 0;
+    let clickPower = 1;
+    let upgrades = {
+      autoclicker: { level: 0, cost: 50, power: 1 },
+      betterClick: { level: 0, cost: 100, power: 2 },
+      superClick: { level: 0, cost: 500, power: 5 },
+    };
     let prestigeLevel = 0;
-    let multiplier = 1;
+    let bonusActive = false;
+    let bonusMultiplier = 1;
+    let bonusTimeout;
+    let bonusInterval;
+    let skinIndex = 0;
+    const skins = [
+      'https://via.placeholder.com/100/FF0000',
+      'https://via.placeholder.com/100/00FF00',
+      'https://via.placeholder.com/100/0000FF'
+    ];
 
-    let clickUpgradeCost = 10;
-    let superClickerCost = 50;
-    let autoClickerCost = 25;
-    let fireClickCost = 100;
-    let turboAutoClickerCost = 200;
-    let doubleRewardCost = 500;
-    let megaClickerCost = 500;
+    function updateUI() {
+      document.getElementById("clicks").textContent = Math.floor(clicks);
+      document.getElementById("autoclickerCost").textContent = upgrades.autoclicker.cost;
+      document.getElementById("betterClickCost").textContent = upgrades.betterClick.cost;
+      document.getElementById("superClickCost").textContent = upgrades.superClick.cost;
+    }
 
-    const achievements = [];
-
-    function clickCookie(event) {
-      const gain = cookiesPerClick * multiplier;
-      cookieCount += gain;
-      showFloatingText(`+${gain}`, event.clientX, event.clientY);
-      checkAchievements();
-      updateDisplay();
+    function clickJump() {
+      clicks += clickPower * bonusMultiplier;
+      updateUI();
       saveGame();
     }
 
-    function showFloatingText(text, x, y) {
-      const float = document.createElement("div");
-      float.className = "floating";
-      float.textContent = text;
-      float.style.left = x + "px";
-      float.style.top = y + "px";
-      document.body.appendChild(float);
-      setTimeout(() => document.body.removeChild(float), 1000);
-    }
-
-    function activateBonus() {
-      const chance = Math.random();
-      if (chance < 0.5) {
-        multiplier = 4;
-        setTimeout(() => { multiplier = 1; }, 30000);
-      } else {
-        multiplier = 2;
-        setTimeout(() => { multiplier = 1; }, 60000);
+    function buyUpgrade(name) {
+      let up = upgrades[name];
+      if (clicks >= up.cost) {
+        clicks -= up.cost;
+        up.level++;
+        clickPower += up.power * (prestigeLevel + 1);
+        up.cost = Math.floor(up.cost * 1.5);
+        up.power = Math.floor(up.power * 1.2);
+        updateUI();
+        saveGame();
       }
-      document.getElementById("bonus").style.display = "none";
-    }
-
-    setInterval(() => {
-      if (Math.random() < 0.01) {
-        document.getElementById("bonus").style.display = "block";
-      }
-    }, 1000);
-
-    function openAchievements() {
-      document.getElementById("overlay").style.display = "block";
-      document.getElementById("achievementsModal").style.display = "block";
-    }
-
-    function closeAchievements() {
-      document.getElementById("overlay").style.display = "none";
-      document.getElementById("achievementsModal").style.display = "none";
-    }
-
-    function checkAchievements() {
-      const list = document.getElementById("achievementsList");
-      list.innerHTML = "";
-      const achs = [
-        { name: "100 Galletas", condition: cookieCount >= 100 },
-        { name: "1000 Galletas", condition: cookieCount >= 1000 },
-        { name: "10 Auto Clickers", condition: autoClickers >= 10 },
-        { name: "Nivel de Prestigio 1", condition: prestigeLevel >= 1 },
-      ];
-      achs.forEach(a => {
-        const li = document.createElement("li");
-        li.textContent = a.name + (a.condition ? " ✅" : " ❌");
-        list.appendChild(li);
-      });
     }
 
     function prestige() {
-      if (cookieCount >= 10000) {
-        prestigeLevel++;
-        cookiesPerClick = 1 * (prestigeLevel + 1);
-        autoClickers = 0;
-        cookieCount = 0;
-        multiplier = 1;
-        saveGame();
-        alert("¡Prestigio activado! Clics ahora valen el doble.");
+      prestigeLevel++;
+      clickPower = 1;
+      for (let key in upgrades) {
+        upgrades[key].level = 0;
+        upgrades[key].cost = Math.floor(upgrades[key].cost / 2);
+        upgrades[key].power *= 10;
       }
+      clicks = 0;
+      updateUI();
+      saveGame();
+    }
+
+    function randomBonus() {
+      const multipliers = [2, 4, 10, 1000];
+      const chances = [0.5, 0.3, 0.15, 0.05];
+      if (bonusActive) return;
+      let rand = Math.random();
+      let index = 0;
+      while (rand > chances[index]) {
+        rand -= chances[index];
+        index++;
+      }
+      bonusMultiplier = multipliers[index];
+      bonusActive = true;
+      let duration = index < 2 ? (index === 0 ? 60000 : 30000) : (index === 2 ? 15000 : 5000);
+      let bonusText = `BONUS x${bonusMultiplier} - ${duration / 1000}s`;
+      document.getElementById("bonus").style.display = "block";
+      document.getElementById("bonus").textContent = bonusText;
+      bonusTimeout = setTimeout(() => {
+        bonusActive = false;
+        bonusMultiplier = 1;
+        document.getElementById("bonus").style.display = "none";
+      }, duration);
+    }
+
+    function changeSkin() {
+      skinIndex = (skinIndex + 1) % skins.length;
+      document.getElementById("skin").style.backgroundImage = `url('${skins[skinIndex]}')`;
     }
 
     function saveGame() {
-      const gameState = {
-        cookieCount,
-        cookiesPerClick,
-        autoClickers,
+      const saveData = {
+        clicks,
+        clickPower,
+        upgrades,
         prestigeLevel,
-        clickUpgradeCost,
-        superClickerCost,
-        autoClickerCost,
-        fireClickCost,
-        turboAutoClickerCost,
-        doubleRewardCost,
-        megaClickerCost
+        skinIndex,
       };
-      localStorage.setItem("cookieClickerSave", JSON.stringify(gameState));
+      localStorage.setItem("clickGameSave", JSON.stringify(saveData));
     }
 
     function loadGame() {
-      const saved = localStorage.getItem("cookieClickerSave");
-      if (saved) {
-        const game = JSON.parse(saved);
-        cookieCount = game.cookieCount || 0;
-        cookiesPerClick = game.cookiesPerClick || 1;
-        autoClickers = game.autoClickers || 0;
-        prestigeLevel = game.prestigeLevel || 0;
-        clickUpgradeCost = game.clickUpgradeCost || 10;
-        superClickerCost = game.superClickerCost || 50;
-        autoClickerCost = game.autoClickerCost || 25;
-        fireClickCost = game.fireClickCost || 100;
-        turboAutoClickerCost = game.turboAutoClickerCost || 200;
-        doubleRewardCost = game.doubleRewardCost || 500;
-        megaClickerCost = game.megaClickerCost || 500;
+      const saveData = JSON.parse(localStorage.getItem("clickGameSave"));
+      if (saveData) {
+        clicks = saveData.clicks;
+        clickPower = saveData.clickPower;
+        upgrades = saveData.upgrades;
+        prestigeLevel = saveData.prestigeLevel;
+        skinIndex = saveData.skinIndex;
+        changeSkin();
       }
-    }
-
-    function updateDisplay() {
-      document.getElementById("cookieCount").textContent = Math.floor(cookieCount);
-      document.getElementById("cookiesPerClick").textContent = cookiesPerClick * multiplier;
-      document.getElementById("autoClickers").textContent = autoClickers;
-      document.getElementById("clickUpgradeCost").textContent = clickUpgradeCost;
-      document.getElementById("superClickerCost").textContent = superClickerCost;
-      document.getElementById("autoClickerCost").textContent = autoClickerCost;
-      document.getElementById("fireClickCost").textContent = fireClickCost;
-      document.getElementById("turboAutoClickerCost").textContent = turboAutoClickerCost;
-      document.getElementById("doubleRewardCost").textContent = doubleRewardCost;
-      document.getElementById("megaClickerCost").textContent = megaClickerCost;
-    }
-
-    function buyClickUpgrade() {
-      if (cookieCount >= clickUpgradeCost) {
-        cookieCount -= clickUpgradeCost;
-        cookiesPerClick += 1;
-        clickUpgradeCost = Math.floor(clickUpgradeCost * 1.4);
-        updateDisplay();
-        saveGame();
-      }
-    }
-
-    function buySuperClicker() {
-      if (cookieCount >= superClickerCost) {
-        cookieCount -= superClickerCost;
-        cookiesPerClick += 5;
-        superClickerCost = Math.floor(superClickerCost * 1.5);
-        updateDisplay();
-        saveGame();
-      }
-    }
-
-    function buyAutoClicker() {
-      if (cookieCount >= autoClickerCost) {
-        cookieCount -= autoClickerCost;
-        autoClickers += 1;
-        autoClickerCost = Math.floor(autoClickerCost * 1.6);
-        updateDisplay();
-        saveGame();
-      }
-    }
-
-    function buyFireClick() {
-      if (cookieCount >= fireClickCost) {
-        cookieCount -= fireClickCost;
-        cookiesPerClick += 10;
-        fireClickCost = Math.floor(fireClickCost * 1.8);
-        updateDisplay();
-        saveGame();
-      }
-    }
-
-    function buyTurboAutoClicker() {
-      if (cookieCount >= turboAutoClickerCost) {
-        cookieCount -= turboAutoClickerCost;
-        autoClickers += 5;
-        turboAutoClickerCost = Math.floor(turboAutoClickerCost * 2);
-        updateDisplay();
-        saveGame();
-      }
-    }
-
-    function buyDoubleReward() {
-      if (cookieCount >= doubleRewardCost) {
-        cookieCount -= doubleRewardCost;
-        cookiesPerClick *= 2;
-        autoClickers *= 2;
-        doubleRewardCost = Math.floor(doubleRewardCost * 3);
-        updateDisplay();
-        saveGame();
-      }
-    }
-
-    function buyMegaClick() {
-      if (cookieCount >= megaClickerCost) {
-        cookieCount -= megaClickerCost;
-        cookiesPerClick += 50;
-        megaClickerCost = Math.floor(megaClickerCost * 2);
-        updateDisplay();
-        saveGame();
-      }
-    }
-
-    function resetGame() {
-      if (confirm("¿Seguro que quieres reiniciar tu progreso?")) {
-        localStorage.removeItem("cookieClickerSave");
-        location.reload();
-      }
+      updateUI();
     }
 
     setInterval(() => {
-      cookieCount += autoClickers * multiplier;
-      updateDisplay();
-      saveGame();
+      if (upgrades.autoclicker.level > 0) {
+        clicks += upgrades.autoclicker.level * upgrades.autoclicker.power * (prestigeLevel + 1) * bonusMultiplier;
+        updateUI();
+      }
     }, 1000);
 
-    window.onload = function () {
-      loadGame();
-      updateDisplay();
-      checkAchievements();
-    };
+    function startBonusSpawner() {
+      bonusInterval = setInterval(() => {
+        let delay = Math.random() * 600000 + 60000; // entre 1 y 10 minutos
+        setTimeout(randomBonus, delay);
+      }, 10000);
+    }
+
+    loadGame();
+    startBonusSpawner();
   </script>
 </body>
 </html>
