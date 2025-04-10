@@ -3,19 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cookie Clicker</title>
+    <title>Cookie Clicker Mejorado</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
-        <h1>Cookie Clicker</h1>
-        <div id="cookie" onclick="clickCookie()">
-            🍪
-        </div>
+        <h1>🍪 Cookie Clicker Mejorado 🍪</h1>
+        <div id="cookie" onclick="clickCookie()">🍪</div>
         <p>Galletas: <span id="cookieCount">0</span></p>
-        <button id="upgradeButton" onclick="buyUpgrade()">Mejora: Costo 10 galletas</button>
-        <p id="upgradeInfo">Mejora disponible: Añadir 1 galleta por clic</p>
+
+        <div class="upgrades">
+            <button onclick="buyClickUpgrade()">Mejorar Clic (+1) - Costo: <span id="clickUpgradeCost">10</span></button>
+            <button onclick="buyAutoClicker()">Auto Clicker - Costo: <span id="autoClickerCost">25</span></button>
+            <button onclick="buySuperClicker()">Súper Clicker (+5) - Costo: <span id="superClickerCost">50</span></button>
+        </div>
+
+        <p class="info">Click normal: <span id="cookiesPerClick">1</span> | Auto clics/seg: <span id="autoClickers">0</span></p>
     </div>
+
     <script src="script.js"></script>
 </body>
 </html>
